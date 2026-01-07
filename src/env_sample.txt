@@ -22,7 +22,7 @@ phi_4_api_version="2024-05-01-preview"
 embedding_endpoint=""
 embedding_deployment="text-embedding-3-large"
 embedding_api_key=""
-embedding_api_version=""
+embedding_api_version="2025-01-01-preview"
 
 # Storage account credentials
 blob_connection_string=""

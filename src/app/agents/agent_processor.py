@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from typing import List, Callable, Set, Any, Dict
 from azure.ai.projects.models import FunctionTool
 from openai.types.responses.response_input_param import FunctionCallOutput, ResponseInputParam
+import json
 
 # Import MCP client for tool execution
 import sys
