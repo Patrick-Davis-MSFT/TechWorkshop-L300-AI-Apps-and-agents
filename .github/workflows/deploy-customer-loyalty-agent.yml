@@ -44,8 +44,6 @@ jobs:
               echo "EOF"
             } >> "$GITHUB_ENV"
           done < .env
-          # Optional sanity check (does not print values)
-          grep -q '^COSMOS_ENDPOINT=' .env
 
       - name: Validate COSMOS_ENDPOINT is present
         run: |
