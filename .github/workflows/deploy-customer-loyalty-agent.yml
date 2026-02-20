@@ -30,6 +30,21 @@ jobs:
           set +x
           printf '%s' "${{ secrets.ENV }}" > .env
 
+      - name: Export .env values to job environment
+        run: |
+          while IFS= read -r line || [ -n "$line" ]; do
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ "$line" != *=* ]] && continue
+            key="${line%%=*}"
+            value="${line#*=}"
+            key="$(echo "$key" | tr -d '[:space:]')"
+            {
+              echo "$key<<EOF"
+              echo "$value"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+          done < .env
+
 
       - name: Login to Azure
         uses: azure/login@v2
