@@ -50,8 +50,12 @@ jobs:
 
                   key, value = line.split("=", 1)
                   key = key.strip()
+                    value = value.strip()
                   if not key:
                       continue
+
+                    if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+                      value = value[1:-1]
 
                   github_env.write(f"{key}<<EOF\n{value}\nEOF\n")
                   exported.add(key)
