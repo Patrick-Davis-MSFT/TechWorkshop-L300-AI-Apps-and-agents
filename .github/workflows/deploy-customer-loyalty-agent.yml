@@ -47,6 +47,14 @@ jobs:
           # Optional sanity check (does not print values)
           grep -q '^COSMOS_ENDPOINT=' .env
 
+      - name: Validate COSMOS_ENDPOINT is present
+        run: |
+          if [ -z "${COSMOS_ENDPOINT:-}" ]; then
+            echo "COSMOS_ENDPOINT is not set in workflow environment"
+            exit 1
+          fi
+          echo "COSMOS_ENDPOINT is present"
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
