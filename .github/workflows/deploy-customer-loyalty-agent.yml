@@ -24,15 +24,33 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Create .env file from secret
         run: |
           set +x
           printf '%s' "${{ secrets.ENV }}" > src/.env
+
+      - name: Export .env values to environment variables
+        run: |
+          while IFS= read -r line || [ -n "$line" ]; do
+            [ -z "$line" ] && continue
+            case "$line" in
+              \#*) continue ;;
+            esac
+
+            key="${line%%=*}"
+            value="${line#*=}"
+
+            {
+              echo "$key<<EOF"
+              echo "$value"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+          done < src/.env
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Install dependencies
         run: |
@@ -41,3 +59,7 @@ jobs:
 
       - name: Run customer loyalty agent initializer
         run: python src/app/agents/customerLoyaltyAgent_initializer.py
+
+      - name: Delete .env file
+        if: always()
+        run: rm -f src/.env
