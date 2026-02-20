@@ -44,7 +44,8 @@ jobs:
               echo "EOF"
             } >> "$GITHUB_ENV"
           done < .env
-
+          # Optional sanity check (does not print values)
+          grep -q '^COSMOS_ENDPOINT=' .env
 
       - name: Login to Azure
         uses: azure/login@v2
