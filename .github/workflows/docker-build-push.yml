@@ -1,0 +1,40 @@
+name: Build and Push Docker Image to ACR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env file from secret
+        run: |
+          set +x
+          printf '%s' "${{ secrets.ENV }}" > src/.env
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: revle25h3am3ucosureg.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: src
+          file: src/Dockerfile
+          push: true
+          tags: revle25h3am3ucosureg.azurecr.io/techworkshop-l300-ai-apps-and-agents:latest
+
+      - name: Delete .env file
+        if: always()
+        run: rm -f src/.env
