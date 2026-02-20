@@ -25,25 +25,40 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Create .env file from secret
+      - name: Create .env and export variables
+        env:
+          ENV_SECRET: ${{ secrets.ENV }}
         run: |
           set +x
-          printf '%s' "${{ secrets.ENV }}" > .env
+          python - <<'PY'
+          import os
+          from pathlib import Path
 
-      - name: Export .env values to job environment
-        run: |
-          while IFS= read -r line || [ -n "$line" ]; do
-            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            [[ "$line" != *=* ]] && continue
-            key="${line%%=*}"
-            value="${line#*=}"
-            key="$(echo "$key" | tr -d '[:space:]')"
-            {
-              echo "$key<<EOF"
-              echo "$value"
-              echo "EOF"
-            } >> "$GITHUB_ENV"
-          done < .env
+          raw = os.environ.get("ENV_SECRET", "")
+          if "\\n" in raw and "\n" not in raw:
+              raw = raw.replace("\\n", "\n")
+          raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+
+          Path(".env").write_text(raw, encoding="utf-8")
+
+          exported = set()
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as github_env:
+              for line in raw.split("\n"):
+                  stripped = line.strip()
+                  if not stripped or stripped.startswith("#") or "=" not in line:
+                      continue
+
+                  key, value = line.split("=", 1)
+                  key = key.strip()
+                  if not key:
+                      continue
+
+                  github_env.write(f"{key}<<EOF\n{value}\nEOF\n")
+                  exported.add(key)
+
+          if "COSMOS_ENDPOINT" not in exported:
+              raise SystemExit("COSMOS_ENDPOINT key was not found in secrets.ENV after parsing")
+          PY
 
       - name: Validate COSMOS_ENDPOINT is present
         run: |
