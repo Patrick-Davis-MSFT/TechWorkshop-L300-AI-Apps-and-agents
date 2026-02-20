@@ -29,6 +29,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Create .env file from secret
+        run: |
+          set +x
+          printf '%s' "${{ secrets.ENV }}" > src/.env
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
